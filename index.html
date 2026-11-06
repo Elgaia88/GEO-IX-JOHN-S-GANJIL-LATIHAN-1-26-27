@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis IPS Kelas 9 - Modernisasi & Digitalisasi</title>
+    <!-- Library untuk efek Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #f0f4f8;
+            --card-bg: #ffffff;
+            --text-main: #2d3748;
+            --btn-bg: #edf2f7;
+            --btn-hover: #e2e8f0;
+            --correct: #48bb78;
+            --wrong: #f56565;
+            --primary: #4299e1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            max-width: 700px;
+            width: 100%;
+        }
+
+        h1, h2, h3 {
+            text-align: center;
+            margin-top: 0;
+        }
+
+        /* Setup Screen */
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        button.start-btn {
+            width: 100%;
+            background-color: var(--primary);
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 18px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        button.start-btn:hover {
+            background-color: #3182ce;
+        }
+
+        /* Quiz Screen */
+        .header-quiz {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .timer {
+            background-color: var(--wrong);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        .question-text {
+            font-size: 20px;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-btn {
+            background-color: var(--btn-bg);
+            color: var(--text-main);
+            border: 2px solid #cbd5e0;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: var(--btn-hover);
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+        }
+
+        .option-btn.correct {
+            background-color: var(--correct) !important;
+            color: white !important;
+            border-color: var(--correct) !important;
+        }
+
+        .option-btn.wrong {
+            background-color: var(--wrong) !important;
+            color: white !important;
+            border-color: var(--wrong) !important;
+        }
+
+        /* Result Screen */
+        .score-display {
+            font-size: 48px;
+            font-weight: bold;
+            text-align: center;
+            color: var(--primary);
+            margin: 20px 0;
+        }
+
+        .review-list {
+            margin-top: 30px;
+            max-height: 400px;
+            overflow-y: auto;
+            border-top: 2px solid #edf2f7;
+            padding-top: 20px;
+        }
+
+        .review-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f7fafc;
+            border-radius: 8px;
+            border-left: 5px solid #cbd5e0;
+        }
+
+        .review-item.benar {
+            border-left-color: var(--correct);
+        }
+
+        .review-item.salah {
+            border-left-color: var(--wrong);
+        }
+
+        .review-q {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .review-ans {
+            font-size: 14px;
+        }
+
+        .color-green { color: #38a169; font-weight: bold; }
+        .color-red { color: #e53e3e; font-weight: bold; }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Layar Setup Kuis -->
+    <div id="setup-screen" class="container">
+        <h1>Kuis IPS Terpadu: Era Modernisasi</h1>
+        <p style="text-align:center;">Prediksi Soal Ujian SMP Kelas 3</p>
+        
+        <div class="input-group">
+            <label for="playerName">Nama Pemain:</label>
+            <input type="text" id="playerName" placeholder="Masukkan nama Anda..." required>
+        </div>
+        
+        <div class="input-group">
+            <label for="timeLimit">Durasi Waktu Per Soal:</label>
+            <select id="timeLimit">
+                <option value="15">15 Detik</option>
+                <option value="30">30 Detik</option>
+            </select>
+        </div>
+
+        <button class="start-btn" onclick="startQuiz()">Mulai Kuis</button>
+    </div>
+
+    <!-- Layar Kuis -->
+    <div id="quiz-screen" class="container hidden">
+        <div class="header-quiz">
+            <span id="question-tracker">Soal 1/30</span>
+            <span class="timer">Waktu: <span id="time-display">15</span>s</span>
+        </div>
+        <div id="question-text" class="question-text">Teks Soal</div>
+        <div id="options-container" class="options">
+            <!-- Pilihan jawaban di-render dari JS -->
+        </div>
+    </div>
+
+    <!-- Layar Hasil & Review -->
+    <div id="result-screen" class="container hidden">
+        <h2 id="result-title">Hasil Kuis</h2>
+        <p style="text-align:center; font-size:18px;">Pemain: <strong id="result-name">Nama</strong></p>
+        <div class="score-display" id="final-score">100</div>
+        
+        <h3>Review Jawaban</h3>
+        <div id="review-container" class="review-list">
+            <!-- Review di-render dari JS -->
+        </div>
+        
+        <button class="start-btn" onclick="location.reload()" style="margin-top:20px;">Ulangi Kuis</button>
+    </div>
+
+    <script>
+        // Database 30 Soal Berdasarkan Materi "JOHN S GANJIL ngk tau sampai mana.pdf"
+        const masterQuestions = [
+            { q: "Kata 'modernisasi' berasal dari bahasa Latin, yaitu 'modo' dan 'ernus'. Makna kata 'modo' adalah...", options: ["Cara", "Masa kini", "Perubahan", "Masyarakat"], answer: "Cara" },
+            { q: "Arti kata 'ernus' pada asal kata modernisasi adalah...", options: ["Masa kini", "Cara", "Tradisional", "Kemajuan"], answer: "Masa kini" },
+            { q: "Perubahan dari masyarakat tradisional menuju masyarakat yang maju disebut...", options: ["Modernisasi", "Globalisasi", "Westernisasi", "Urbanisasi"], answer: "Modernisasi" },
+            { q: "Berikut ini yang BUKAN merupakan ciri-ciri manusia modern adalah...", options: ["Tertutup terhadap perubahan", "Menghargai waktu", "Percaya diri", "Bersikap rasional"], answer: "Tertutup terhadap perubahan" },
+            { q: "Sikap 'open minded' sebagai salah satu ciri manusia modern memiliki arti...", options: ["Berpikiran terbuka", "Bersikap demokratis", "Menghargai waktu", "Memiliki perencanaan"], answer: "Berpikiran terbuka" },
+            { q: "Kemajuan teknologi di era modernisasi berpengaruh pada peningkatan arus perpindahan penduduk ke kota yang disebut...", options: ["Urbanisasi", "Transmigrasi", "Emigrasi", "Imigrasi"], answer: "Urbanisasi" },
+            { q: "Dampak modernisasi pada sistem pemerintahan adalah mendorong meluasnya...", options: ["Demokrasi", "Otokrasi", "Oligarki", "Monarki"], answer: "Demokrasi" },
+            { q: "Terjadinya individualitas dan efisiensi di masyarakat merupakan wujud modernitas pada aspek...", options: ["Pranata sosial", "Keluarga", "Demografi", "Pendidikan"], answer: "Pranata sosial" },
+            { q: "Dampak positif modernisasi pada aspek stratifikasi sosial adalah...", options: ["Kesempatan mendapatkan prestasi makin terbuka", "Berkurangnya populasi di desa", "Terjadinya perubahan cara hidup berkeluarga", "Individualisme yang semakin tinggi"], answer: "Kesempatan mendapatkan prestasi makin terbuka" },
+            { q: "Hasil dari pengalaman masyarakat tertentu berdasarkan filosofi, nilai, etika, dan perilaku yang melembaga secara tradisional disebut...", options: ["Kearifan lokal", "Budaya asing", "Modernisasi", "Asimilasi"], answer: "Kearifan lokal" },
+            { q: "Kegiatan mempelajari langsung kebudayaan daerah, seperti berlatih tarian daerah, merupakan upaya pelestarian kearifan lokal melalui...", options: ["Culture experience", "Culture knowledge", "Culture heritage", "Culture shock"], answer: "Culture experience" },
+            { q: "Membuat pusat informasi kebudayaan sebagai pusat edukasi dan sarana pengembangan kebudayaan disebut...", options: ["Culture knowledge", "Culture experience", "Culture literacy", "Culture transformation"], answer: "Culture knowledge" },
+            { q: "Kearifan lokal berupa sistem pengelolaan pertanian dan irigasi yang diwariskan turun-temurun pada masyarakat Bali disebut...", options: ["Subak", "Fahombo", "Mangongkal holi", "Marsiadapari"], answer: "Subak" },
+            { q: "Upacara adat Fahombo atau tradisi lompat batu merupakan kearifan lokal yang berasal dari...", options: ["Nias", "Bali", "Batak Toba", "Jawa Barat"], answer: "Nias" },
+            { q: "Tradisi menggali tulang belulang dari dalam makam pada suku Batak Toba dikenal dengan nama...", options: ["Mangongkal holi", "Marsiadapari", "Subak", "Fahombo"], answer: "Mangongkal holi" },
+            { q: "Marsiadapari pada masyarakat suku Batak merupakan bentuk kearifan lokal dalam hal...", options: ["Gotong royong", "Pertanian irigasi", "Lompat batu", "Menghormati leluhur"], answer: "Gotong royong" },
+            { q: "Manusia modern sangat percaya pada ilmu pengetahuan dan logika. Hal ini sejalan dengan ciri manusia modern yang bersikap...", options: ["Rasional", "Demokratis", "Individualis", "Tradisional"], answer: "Rasional" },
+            { q: "Individu atau kelompok yang saling terhubung di lokasi berbeda menggunakan sistem teknologi informasi disebut...", options: ["Masyarakat Jaringan", "Masyarakat Tradisional", "Masyarakat Multikultural", "Masyarakat Majemuk"], answer: "Masyarakat Jaringan" },
+            { q: "Berikut ini yang BUKAN merupakan karakteristik masyarakat jaringan di abad ke-21 adalah...", options: ["Konektivitas terbatas", "Kolaborasi online", "Demokratisasi informasi", "Pengaruh media sosial"], answer: "Konektivitas terbatas" },
+            { q: "Fondasi atau bekal utama untuk membentuk citizenship di era digital adalah...", options: ["Literasi dan etika digital", "Konektivitas universal", "Perubahan konsumsi", "Kolaborasi online"], answer: "Literasi dan etika digital" },
+            { q: "Kemampuan mengelola perilaku saat menggunakan teknologi dan berinteraksi di ruang digital disebut...", options: ["Digital citizenship", "Digital commerce", "Digital law", "Digital health"], answer: "Digital citizenship" },
+            { q: "Tiga prinsip utama dalam menggunakan teknologi digital secara pantas dan bertanggung jawab adalah...", options: ["Respect, Educate, Protect", "Connect, Share, Profit", "Access, Security, Commerce", "Literacy, Law, Welfare"], answer: "Respect, Educate, Protect" },
+            { q: "Terbukanya kesempatan bagi seluruh masyarakat untuk berpartisipasi dalam dunia digital termasuk dalam elemen...", options: ["Digital access", "Digital etiquette", "Digital law", "Digital literacy"], answer: "Digital access" },
+            { q: "Standar dan aturan yang harus dipenuhi agar terjaga keharmonisan interaksi masyarakat di dunia digital disebut...", options: ["Digital etiquette", "Digital security", "Digital commerce", "Digital access"], answer: "Digital etiquette" },
+            { q: "Aturan perundang-undangan yang harus dipahami pengguna untuk membatasi percakapan dan tindakan di dunia digital dikenal dengan...", options: ["Digital law", "Digital rights", "Digital etiquette", "Digital literacy"], answer: "Digital law" },
+            { q: "Pengetahuan dan kesadaran individu saat berinteraksi mencari informasi di internet masuk ke dalam elemen...", options: ["Digital literacy", "Digital communication", "Digital health", "Digital commerce"], answer: "Digital literacy" },
+            { q: "Pemahaman terhadap karakteristik media yang digunakan saat bertransaksi di perdagangan online disebut...", options: ["Digital commerce", "Digital communication", "Digital rights", "Digital law"], answer: "Digital commerce" },
+            { q: "Memanfaatkan media dengan bertanggung jawab tanpa mengancam atau merendahkan hak orang lain merupakan bagian dari elemen...", options: ["Digital rights and responsibilities", "Digital security", "Digital law", "Digital access"], answer: "Digital rights and responsibilities" },
+            { q: "Kehati-hatian dan keselamatan untuk menjamin keamanan dari kejahatan virtual saat penggunaan media digital disebut...", options: ["Digital security", "Digital health", "Digital etiquette", "Digital literacy"], answer: "Digital security" },
+            { q: "Kesadaran akan kesehatan fisik maupun psikologis ketika menggunakan media digital disebut...", options: ["Digital health and welfare", "Digital security", "Digital rights", "Digital citizenship"], answer: "Digital health and welfare" }
+        ];
+
+        let questions = [];
+        let currentQIndex = 0;
+        let score = 0;
+        let correctCount = 0;
+        let timePerQuestion = 15;
+        let timer;
+        let timeLeft = 0;
+        let playerName = "";
+        let reviewData = [];
+
+        // Fungsi mengacak array (Fisher-Yates)
+        function shuffleArray(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // Memulai Kuis
+        function startQuiz() {
+            playerName = document.getElementById("playerName").value.trim();
+            if (!playerName) {
+                alert("Harap masukkan nama Anda terlebih dahulu!");
+                return;
+            }
+
+            timePerQuestion = parseInt(document.getElementById("timeLimit").value);
+            
+            // Acak Soal
+            questions = shuffleArray(masterQuestions);
+            
+            // Setup UI
+            document.getElementById("setup-screen").classList.add("hidden");
+            document.getElementById("quiz-screen").classList.remove("hidden");
+            
+            currentQIndex = 0;
+            correctCount = 0;
+            reviewData = [];
+            loadQuestion();
+        }
+
+        // Menampilkan soal saat ini
+        function loadQuestion() {
+            const qData = questions[currentQIndex];
+            
+            document.getElementById("question-tracker").innerText = `Soal ${currentQIndex + 1}/${questions.length}`;
+            document.getElementById("question-text").innerText = qData.q;
+            
+            const optionsContainer = document.getElementById("options-container");
+            optionsContainer.innerHTML = "";
+            
+            // Acak pilihan jawaban
+            const shuffledOptions = shuffleArray(qData.options);
+            
+            shuffledOptions.forEach(opt => {
+                const btn = document.createElement("button");
+                btn.className = "option-btn";
+                btn.innerText = opt;
+                btn.onclick = () => handleAnswer(btn, opt, qData.answer, shuffledOptions);
+                optionsContainer.appendChild(btn);
+            });
+
+            // Mulai Timer
+            timeLeft = timePerQuestion;
+            document.getElementById("time-display").innerText = timeLeft;
+            clearInterval(timer);
+            
+            timer = setInterval(() => {
+                timeLeft--;
+                document.getElementById("time-display").innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    handleTimeOut(qData.answer);
+                }
+            }, 1000);
+        }
+
+        // Handle saat user memilih jawaban
+        function handleAnswer(selectedBtn, selectedOpt, correctOpt, allOptions) {
+            clearInterval(timer); // Hentikan waktu
+            
+            const buttons = document.querySelectorAll(".option-btn");
+            buttons.forEach(btn => btn.disabled = true); // Kunci semua tombol
+
+            let isCorrect = (selectedOpt === correctOpt);
+            
+            if (isCorrect) {
+                selectedBtn.classList.add("correct");
+                correctCount++;
+                triggerConfetti();
+            } else {
+                selectedBtn.classList.add("wrong");
+                // Cari dan warnai jawaban yang benar dengan warna hijau
+                buttons.forEach(btn => {
+                    if (btn.innerText === correctOpt) {
+                        btn.classList.add("correct");
+                    }
+                });
+            }
+
+            // Simpan log untuk halaman review
+            reviewData.push({
+                q: questions[currentQIndex].q,
+                correct: correctOpt,
+                chosen: selectedOpt,
+                isCorrect: isCorrect
+            });
+
+            setTimeout(nextQuestion, 2000);
+        }
+
+        // Handle saat waktu habis
+        function handleTimeOut(correctOpt) {
+            const buttons = document.querySelectorAll(".option-btn");
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                // Tunjukkan jawaban benar karena waktu habis
+                if (btn.innerText === correctOpt) {
+                    btn.classList.add("correct");
+                }
+            });
+
+            reviewData.push({
+                q: questions[currentQIndex].q,
+                correct: correctOpt,
+                chosen: "Tidak Menjawab (Waktu Habis)",
+                isCorrect: false
+            });
+
+            setTimeout(nextQuestion, 2500);
+        }
+
+        function nextQuestion() {
+            currentQIndex++;
+            if (currentQIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        // Menampilkan layar akhir dan Review
+        function showResults() {
+            document.getElementById("quiz-screen").classList.add("hidden");
+            document.getElementById("result-screen").classList.remove("hidden");
+            
+            // Hitung Score = Jumlah Benar / Total Soal * 100
+            score = Math.round((correctCount / questions.length) * 100);
+            
+            document.getElementById("result-title").innerText = "Kuis Selesai!";
+            document.getElementById("result-name").innerText = playerName;
+            document.getElementById("final-score").innerText = `Skor: ${score}`;
+
+            const reviewContainer = document.getElementById("review-container");
+            reviewContainer.innerHTML = "";
+
+            reviewData.forEach((item, index) => {
+                const div = document.createElement("div");
+                div.className = `review-item ${item.isCorrect ? 'benar' : 'salah'}`;
+                
+                div.innerHTML = `
+                    <div class="review-q">${index + 1}. ${item.q}</div>
+                    <div class="review-ans">Jawaban Benar: <span class="color-green">${item.correct}</span></div>
+                    <div class="review-ans">Jawaban Anda: <span class="${item.isCorrect ? 'color-green' : 'color-red'}">${item.chosen}</span></div>
+                `;
+                reviewContainer.appendChild(div);
+            });
+        }
+
+        // Efek Confetti ketika jawaban benar
+        function triggerConfetti() {
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#48bb78', '#4299e1', '#ecc94b', '#f56565']
+            });
+        }
+    </script>
+</body>
+</html>
